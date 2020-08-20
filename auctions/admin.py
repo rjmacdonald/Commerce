@@ -6,3 +6,7 @@ class UserAdmin (admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(models.User, UserAdmin)
+admin.site.register(models.Bids)
+admin.site.register(models.Categories)
+admin.site.register(models.Comments)
+admin.site.register(models.Listings)

@@ -16,8 +16,14 @@ class Bids(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     is_winner = models.BooleanField(default=False)
 
+    def __str__(self):
+        return(f"{self.user}: {self.bid_amount}")
+
 class Categories(models.Model):
     category = models.CharField(max_length=40)
+
+    def __str__(self):
+        return(self.category)
 
 class Comments(models.Model):
     listing = models.ForeignKey(
@@ -30,6 +36,9 @@ class Comments(models.Model):
     )
     comment = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return(f"{self.user} on {self.listing}")
 
 class Listings(models.Model):
     owner = models.ForeignKey(
@@ -48,6 +57,9 @@ class Listings(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return(f"{self.owner}: {self.title}")
+
 class User(AbstractUser):
     pass
 
@@ -60,3 +72,6 @@ class Wishlist(models.Model):
         'User',
         on_delete=models.PROTECT,
     )
+
+    def __str__(self):
+        return(f"{self.user}: {self.listing}")

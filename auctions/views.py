@@ -61,3 +61,20 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+def user(request):
+    return render(request, "auctions/user.html")
+
+def categories(request):
+    return render(request, "auctions/categories.html")
+
+def create(request):
+    return render(request, "auctions/create.html")
+
+def watchlist(request):
+    return render(request, "auctions/watchlist.html")
+
+def listing(request, listing_id):
+    return render(request, "auctions/listing.html", {
+        "listing": listing_id
+    })

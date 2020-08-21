@@ -69,7 +69,7 @@ class Listing(models.Model):
 class User(AbstractUser):
     pass
 
-class Wishlist(models.Model):
+class Watchlist(models.Model):
     listing = models.ForeignKey(
         'Listing',
         on_delete=models.CASCADE,
@@ -77,7 +77,7 @@ class Wishlist(models.Model):
     user = models.ForeignKey(
         'User',
         on_delete=models.PROTECT,
-        related_name="wishlist"
+        related_name="watchlist"
     )
 
     def __str__(self):

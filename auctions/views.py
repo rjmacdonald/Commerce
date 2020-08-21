@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from .models import User, Bid, Category, Comment, Listing
+from .models import User, Bid, Category, Comment, Listing, Watchlist
 
 
 def index(request):
@@ -98,7 +98,31 @@ def create(request):
     return render(request, "auctions/create.html")
 
 def watchlist(request):
-    return render(request, "auctions/watchlist.html")
+    user = request.user.id
+
+    if request.method == "POST":
+
+        # Gets or creates watchlist entry for listing/user combo 
+        obj, created = Watchlist.objects.get_or_create(
+            listing_id = request.POST["listing"],
+            user_id = user
+        )
+
+        # message = "Added to watchlist"
+
+        # If entry exists - deletes
+        if created == False:
+            Watchlist.objects.filter(id=obj.id).delete()
+            # message = "Removed from watchlist"
+
+        return HttpResponseRedirect(reverse("auctions:listing", args=[request.POST["listing"]]))
+
+    else:
+        user = User.objects.filter(id=user).get()
+        watchlist = user.watchlist.all()
+        return render(request, "auctions/watchlist.html", {
+            "watchlist": watchlist
+        })
 
 def listing(request, listing_id):
     listing = Listing.objects.filter(id = listing_id).first()

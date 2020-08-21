@@ -8,6 +8,10 @@
         <link href="{% static 'auctions/styles.css' %}" rel="stylesheet">
     </head>
     <body>
+        {% if message %}
+            {% block message %}
+            {% endblock %}
+        {% endif %}
         <h1>Auctions</h1>
         <div>
             {% if user.is_authenticated %}

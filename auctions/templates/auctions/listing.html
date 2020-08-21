@@ -1,7 +1,21 @@
 {% extends "auctions/layout.html" %}
 
+{% block message %}
+    <div class="alert alert-info" role="alert">
+        {{ message }}
+    </div>
+{% endblock %}
+
 {% block body %}
     <h2>{{ listing.title }}</h2>
+    {% if user.is_authenticated %}
+            <form action="{% url 'auctions:watchlist' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" value="{{ listing.id }}" name="listing">
+                    watchlist
+                </button>
+            </form> 
+    {% endif %}
     <div>
         <img src={{ listing.image_URL }}>
         <p>{{ listing.description }}</p>

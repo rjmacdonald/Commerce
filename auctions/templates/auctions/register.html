@@ -1,12 +1,12 @@
 {% extends "auctions/layout.html" %}
 
+{% block message %}
+    <div class="alert alert-danger" role="alert">{{ message }}</div>
+{% endblock %}
+
 {% block body %}
 
     <h2>Register</h2>
-
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
 
     <form action="{% url 'auctions:register' %}" method="post">
         {% csrf_token %}

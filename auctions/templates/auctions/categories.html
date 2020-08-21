@@ -1,5 +1,18 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    TO DO
+    <h2>Categories</h2>
+    <form action="{% url 'auctions:index' %}" method="post">
+        {% for category in categories %}
+            {% csrf_token %}
+            <button class="btn btn-link" type="submit" value="{{ category.id }}" name="category">
+                {{ category.category }}
+                {% for key, value in counts.items %}
+                    {% if key == category.id %}
+                        ({{ value }})
+                    {% endif %}
+                {% endfor %}
+            </button>
+        {% endfor %}
+    </form>
 {% endblock %}

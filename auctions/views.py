@@ -8,12 +8,20 @@ from .models import User, Bid, Category, Comment, Listing
 
 
 def index(request):
-    listings = Listing.objects.filter(active=True).order_by('title')
+
+    # Gets all listings, POST method provides additional filters
+    if request.method == "POST":
+        category = request.POST['category']
+        listings = Listing.objects.filter(active=True, category_id=category).order_by('title')
+    else:
+        listings = Listing.objects.filter(active=True).order_by('title')
+
+    # Creates dict of highest bid for each listing
     all_bids = Bid.objects.all()
     bids = {}
     for listing in listings:
         bids.update({listing.id : all_bids.filter(listing_id = listing.id).order_by('-bid_amount').first()})
-    print(bids)
+
     return render(request, "auctions/index.html", {
         "listings": listings,
         "bids": bids
@@ -75,7 +83,16 @@ def user(request):
     return render(request, "auctions/user.html")
 
 def categories(request):
-    return render(request, "auctions/categories.html")
+    categories = Category.objects.all()
+    counts = {}
+    for category in categories:
+        count = Listing.objects.filter(category_id=category.id, active=True).count()
+        counts.update({ category.id : count })
+
+    return render(request, "auctions/categories.html", {
+        "categories": categories,
+        "counts": counts
+    })
 
 def create(request):
     return render(request, "auctions/create.html")
@@ -86,7 +103,6 @@ def watchlist(request):
 def listing(request, listing_id):
     listing = Listing.objects.filter(id = listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
-    print(listing)
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "bid": bid

@@ -13,6 +13,8 @@
                 <img src={{ listing.image_URL}}>
                 <div>{{ listing.description }}</div>
             </li>
+        {% empty %}
+            <li>No results found</li>
         {% endfor %}
     </ul>
 

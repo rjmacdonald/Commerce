@@ -8,9 +8,15 @@ from .models import User, Bid, Category, Comment, Listing
 
 
 def index(request):
-    active = Listing.objects.filter(active=True)
+    listings = Listing.objects.filter(active=True).order_by('title')
+    all_bids = Bid.objects.all()
+    bids = {}
+    for listing in listings:
+        bids.update({listing.id : all_bids.filter(listing_id = listing.id).order_by('-bid_amount').first()})
+    print(bids)
     return render(request, "auctions/index.html", {
-        "listings": active
+        "listings": listings,
+        "bids": bids
     })
 
 

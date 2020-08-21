@@ -78,6 +78,10 @@ def watchlist(request):
     return render(request, "auctions/watchlist.html")
 
 def listing(request, listing_id):
+    listing = Listing.objects.filter(id = listing_id).first()
+    bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
+    print(listing)
     return render(request, "auctions/listing.html", {
-        "listing": listing_id
+        "listing": listing,
+        "bid": bid
     })

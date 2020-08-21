@@ -1,5 +1,20 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    TO DO
+    <h2>{{ listing.title }}</h2>
+    <div>
+        <img src={{ listing.image_URL }}>
+        <p>{{ listing.description }}</p>
+    </div>
+    <h4>Bids</h4>
+    <div>
+        Current bid:
+        {% if bid %}
+            £{{ bid.bid_amount }}
+        {% else %}
+            £{{ listing.starting_bid }}
+        {% endif %}
+        
+    </div>
+    <h4>Comments</h4>
 {% endblock %}

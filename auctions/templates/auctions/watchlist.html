@@ -7,7 +7,15 @@
             <li>
                 <div>
                     <a href="{% url 'auctions:listing' entry.listing.id %}"> {{ entry.listing.title }} </a>
-                    {{ entry.listing.starting_bid }}
+                    {% for key, value in bids.items %}
+                        {% if key == entry.listing.id %}
+                            {% if value %}
+                                £{{ value.bid_amount }}
+                            {% else %}
+                                £{{ entry.listing.starting_bid }}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
                 </div>
                 <img src="{{ entry.listing.image_URL }}">
                 <div>

@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from .models import User, Bid, Category, Comment, Listing, Watchlist
+from .utils import get_bid
 
 
 def index(request):
@@ -17,11 +18,11 @@ def index(request):
         listings = Listing.objects.filter(active=True).order_by('title')
 
     # Creates dict of highest bid for each listing
-    all_bids = Bid.objects.all()
     bids = {}
     for listing in listings:
-        bids.update({listing.id : all_bids.filter(listing_id = listing.id).order_by('-bid_amount').first()})
+        bids.update(get_bid(listing))
 
+    print(bids)
     return render(request, "auctions/index.html", {
         "listings": listings,
         "bids": bids
@@ -120,8 +121,15 @@ def watchlist(request):
     else:
         user = User.objects.filter(id=user).get()
         watchlist = user.watchlist.all()
+
+        # Retrieve bids
+        bids = {}
+        for entry in watchlist:
+            bids.update(get_bid(entry.listing))
+        
         return render(request, "auctions/watchlist.html", {
-            "watchlist": watchlist
+            "watchlist": watchlist,
+            "bids": bids
         })
 
 def listing(request, listing_id):

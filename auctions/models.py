@@ -53,10 +53,11 @@ class Listing(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
     starting_bid = models.DecimalField(max_digits=8, decimal_places=2)
-    image_URL = models.URLField(null=True)
+    image_URL = models.URLField(blank=True)
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,
+        blank=True,
         null=True,
         related_name="listings"
     )

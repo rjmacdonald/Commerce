@@ -19,7 +19,9 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-                <img src={{ listing.image_URL}}>
+                {% if listing.image_URL %}
+                    <img class="img-thumbnail" src={{ listing.image_URL}}>
+                {% endif %}
                 <div>{{ listing.description }}</div>
             </li>
         {% empty %}

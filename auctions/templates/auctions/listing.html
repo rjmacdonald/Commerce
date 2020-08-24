@@ -23,11 +23,12 @@
                     </button>
                 </form> 
         {% endif %}
-    
+    </div>
     <div>
         <img src={{ listing.image_URL }}>
         <p>{{ listing.description }}</p>
     </div>
+
     <h4>Bids</h4>
     <div>
         Current bid:
@@ -36,7 +37,8 @@
         {% else %}
             £{{ listing.starting_bid }}
         {% endif %}
-        
     </div>
+
     <h4>Comments</h4>
+
 {% endblock %}

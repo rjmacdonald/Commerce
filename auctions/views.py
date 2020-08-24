@@ -3,10 +3,48 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django import forms
 
 from .models import User, Bid, Category, Comment, Listing, Watchlist
 from .utils import get_bid
 
+
+class CreateListing(forms.Form):
+    title = forms.CharField(
+        label='Title', 
+        max_length=100, 
+        help_text="100 characters max", 
+        widget=forms.TextInput(attrs={"class":"form-control"}))
+    description = forms.CharField(widget=forms.Textarea(attrs={"class":"form-control"}))
+    starting_bid = forms.DecimalField(
+        min_value=0.01, 
+        max_digits=8, 
+        decimal_places=2, 
+        help_text="Provide the minimum starting bid", 
+        widget=forms.NumberInput(attrs={"class":"form-control"}))
+    image_URL = forms.URLField(
+        label="Image URL", 
+        required=False, 
+        help_text="Provide a link to your image", 
+        widget=forms.URLInput(attrs={"class":"form-control"}))
+
+    # Generates tuple list of categories
+    # Note: tuple required as choice field defines name and value
+    options = Category.objects.values("category").order_by("category")
+    categories = [(None, "Please select...")]
+    for option in options:
+        category = option.items()
+        for key, value in category:
+            categories.append((value, value))
+    category = forms.ChoiceField(
+        choices=categories, 
+        required=False,
+        help_text="Select the most appropriate category for your listing",
+        widget=forms.Select(attrs={"class":"form-control"}))
+
+    owner = forms.IntegerField(
+        label='', 
+        widget=forms.HiddenInput)
 
 def index(request):
 
@@ -22,7 +60,6 @@ def index(request):
     for listing in listings:
         bids.update(get_bid(listing))
 
-    print(bids)
     return render(request, "auctions/index.html", {
         "listings": listings,
         "bids": bids
@@ -96,7 +133,34 @@ def categories(request):
     })
 
 def create(request):
-    return render(request, "auctions/create.html")
+    if request.method == "POST":
+        form = CreateListing(request.POST)
+
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            description = form.cleaned_data["description"]
+            starting_bid = form.cleaned_data["starting_bid"]
+            image_URL = form.cleaned_data["image_URL"]
+            category = None
+            if form.cleaned_data["category"]:
+                category = form.cleaned_data["category"]
+            owner = form.cleaned_data["owner"]
+
+            listing = Listing.objects.create(
+                title=title, owner_id=owner, description=description, starting_bid=starting_bid, 
+                image_URL=image_URL, category=category)
+
+            return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
+        else:
+            return render(request, "auctions/create.html", {
+                "form": form,
+                "message": "Error: Invalid submission"
+            })
+    else:
+        form = CreateListing(initial={"owner": request.user.id})
+        return render(request, "auctions/create.html", {
+            "form": form
+        })
 
 def watchlist(request):
     user = request.user.id

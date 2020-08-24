@@ -2,7 +2,24 @@ body {
     padding: 10px;
 }
 
+.errorlist {
+    color: red;
+    size: 8px;
+}
+
+.form-listing {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 20px;
+}
+
 .img-thumbnail {
     max-width: 200px;
     max-height: 200px;
+}
+
+@media (min-width: 870px) {
+    .form-listing {
+        width: 850px;
+    }
 }

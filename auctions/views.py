@@ -197,9 +197,13 @@ def watchlist(request):
         })
 
 def listing(request, listing_id):
+    user = request.user.id
     listing = Listing.objects.filter(id = listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
+    watchlist = Watchlist.objects.filter(user_id=user, listing_id=listing).exists()
+
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "bid": bid
+        "bid": bid,
+        "watchlist": watchlist
     })

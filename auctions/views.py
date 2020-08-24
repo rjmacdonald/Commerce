@@ -30,12 +30,11 @@ class CreateListing(forms.Form):
 
     # Generates tuple list of categories
     # Note: tuple required as choice field defines name and value
-    options = Category.objects.values("category").order_by("category")
+    options = Category.objects.all().order_by("category")
     categories = [(None, "Please select...")]
     for option in options:
-        category = option.items()
-        for key, value in category:
-            categories.append((value, value))
+        categories.append((option.id, option.category))
+    print(categories)
     category = forms.ChoiceField(
         choices=categories, 
         required=False,
@@ -50,10 +49,12 @@ def index(request):
 
     # Gets all listings, POST method provides additional filters
     if request.method == "POST":
-        category = request.POST['category']
-        listings = Listing.objects.filter(active=True, category_id=category).order_by('title')
+        category_id = request.POST['category']
+        category = Category.objects.filter(id=category_id).get()
+        listings = Listing.objects.filter(active=True, category_id=category_id).order_by('title')
     else:
         listings = Listing.objects.filter(active=True).order_by('title')
+        category = None
 
     # Creates dict of highest bid for each listing
     bids = {}
@@ -62,7 +63,8 @@ def index(request):
 
     return render(request, "auctions/index.html", {
         "listings": listings,
-        "bids": bids
+        "bids": bids,
+        "category": category
     })
 
 
@@ -121,7 +123,7 @@ def user(request):
     return render(request, "auctions/user.html")
 
 def categories(request):
-    categories = Category.objects.all()
+    categories = Category.objects.all().order_by("category")
     counts = {}
     for category in categories:
         count = Listing.objects.filter(category_id=category.id, active=True).count()
@@ -148,7 +150,7 @@ def create(request):
 
             listing = Listing.objects.create(
                 title=title, owner_id=owner, description=description, starting_bid=starting_bid, 
-                image_URL=image_URL, category=category)
+                image_URL=image_URL, category_id=category)
 
             return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
         else:

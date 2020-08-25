@@ -2,6 +2,10 @@ body {
     padding: 10px;
 }
 
+form {
+    margin: 10px 0px;
+}
+
 .errorlist {
     color: red;
     size: 8px;
@@ -10,7 +14,7 @@ body {
 .form-listing {
     display: flex;
     flex-direction: column;
-    padding: 10px 20px;
+    padding: 10px 10px;
 }
 
 .img-thumbnail {
@@ -18,12 +22,29 @@ body {
     max-height: 200px;
 }
 
-#watchlist {
+.watchlist {
     margin: 0px 10px;
+    padding: 5px 5px 5px 40px;
+    background-size: 30px;
+    background-position: 5px;
+    background-repeat: no-repeat;
+    border: 1px solid black;
+}
+
+.watchlist-selected {
+    background-image: url("wishlist_selected.png");
+}
+
+.watchlist-unselected {
+    background-image: url("wishlist.png");
 }
 
 @media (min-width: 870px) {
     .form-listing {
+        width: 850px;
+    }
+
+    .comments {
         width: 850px;
     }
 }

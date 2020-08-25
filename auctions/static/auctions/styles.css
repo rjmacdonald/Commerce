@@ -32,11 +32,11 @@ form {
 }
 
 .watchlist-selected {
-    background-image: url("wishlist_selected.png");
+    background-image: url("watchlist_selected.png");
 }
 
 .watchlist-unselected {
-    background-image: url("wishlist.png");
+    background-image: url("watchlist.png");
 }
 
 @media (min-width: 870px) {

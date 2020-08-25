@@ -13,16 +13,26 @@
             <li class="nav-item">
                 <form action="{% url 'auctions:watchlist' %}" method="post">
                     {% csrf_token %}
-                    <button
-                    {% if watchlist == True %}
-                        class="btn btn-success"
-                    {% else %} 
-                        class="btn btn-primary"
-                    {% endif %}
-                    type="submit" value="{{ listing.id }}" name="listing" id="watchlist">
-                        watchlist
+                    <button type="submit" value="{{ listing.id }}" name="watchlist" id="watchlist"
+                        {% if watchlist == True %}
+                            class="btn btn-success">
+                                Remove from watchlist
+                        {% else %} 
+                            class="btn btn-primary">
+                                Add to watchlist
+                        {% endif %}
                     </button>
                 </form> 
+            </li>
+        {% endif %}
+        {% if user.id == listing.owner_id %}
+            <li class="nav-item">
+                <form action="{% url 'auctions:listing' listing.id %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit" value="{{ listing.id }}" name="close">
+                        Close Listing
+                    </button>
+                </form>
             </li>
         {% endif %}
     </ul>
@@ -40,6 +50,8 @@
             £{{ listing.starting_bid }}
         {% endif %}
     </div>
+
+
 
     <h4>Comments</h4>
 

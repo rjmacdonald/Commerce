@@ -171,7 +171,7 @@ def watchlist(request):
 
         # Gets or creates watchlist entry for listing/user combo 
         obj, created = Watchlist.objects.get_or_create(
-            listing_id = request.POST["listing"],
+            listing_id = request.POST["watchlist"],
             user_id = user
         )
 
@@ -182,7 +182,7 @@ def watchlist(request):
             Watchlist.objects.filter(id=obj.id).delete()
             # message = "Removed from watchlist"
 
-        return HttpResponseRedirect(reverse("auctions:listing", args=[request.POST["listing"]]))
+        return HttpResponseRedirect(reverse("auctions:listing", args=[request.POST["watchlist"]]))
 
     else:
         user = User.objects.filter(id=user).get()
@@ -200,12 +200,19 @@ def watchlist(request):
 
 def listing(request, listing_id):
     user = request.user.id
-    listing = Listing.objects.filter(id = listing_id).first()
+    listing = Listing.objects.filter(id=listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
     watchlist = Watchlist.objects.filter(user_id=user, listing_id=listing).exists()
+
+    if request.method == "POST":
+        if request.user.id != listing.owner_id:
+            return HttpResponse("Error: Unauthorised action")
+
+        delete = Listing.objects.filter(id=listing_id).delete()
+        return HttpResponseRedirect(reverse("auctions:index"))
 
     return render(request, "auctions/listing.html", {
         "listing": listing,
         "bid": bid,
-        "watchlist": watchlist
+        "watchlist": watchlist,
     })

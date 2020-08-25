@@ -2,9 +2,9 @@
 
 {% block body %}
     <h2>Watchlist</h2>
-    <ul>
+    <ul class="list-group">
         {% for entry in watchlist %}
-            <li>
+            <li class="list-group-item"> 
                 <div>
                     <a href="{% url 'auctions:listing' entry.listing.id %}"> {{ entry.listing.title }} </a>
                     {% for key, value in bids.items %}
@@ -22,8 +22,8 @@
                     {{ entry.listing.description }}
                 </div>
             </li>
+            {% empty %}
+                <li>No items in watchlist</li>
         {% endfor %}
-        {% empty %}
-            <li>No items in watchlist</li>
     </ul>
 {% endblock %}

@@ -8,9 +8,9 @@
         {% endif %}
     </h2>
 
-    <ul>
+    <ul class="list-group">
         {% for listing in listings %}
-            <li> 
+            <li class="list-group-item"> 
                 <div>
                     <a href="{% url 'auctions:listing' listing.id %}" >{{ listing.title }} </a>
                     

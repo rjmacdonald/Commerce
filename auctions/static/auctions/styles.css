@@ -2,10 +2,6 @@ body {
     padding: 10px;
 }
 
-.btn-toolbar {
-    width: 200px;
-}
-
 .errorlist {
     color: red;
     size: 8px;
@@ -20,6 +16,10 @@ body {
 .img-thumbnail {
     max-width: 200px;
     max-height: 200px;
+}
+
+#watchlist {
+    margin: 0px 10px;
 }
 
 @media (min-width: 870px) {

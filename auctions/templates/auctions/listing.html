@@ -7,9 +7,10 @@
 {% endblock %}
 
 {% block body %}
-    <div class="btn-toolbar justify-content-between">
-        <h2>{{ listing.title }}</h2>
+    <ul class="nav">
+        <li class="nav-item"> <h2>{{ listing.title }}</h2> </li>
         {% if user.is_authenticated %}
+            <li class="nav-item">
                 <form action="{% url 'auctions:watchlist' %}" method="post">
                     {% csrf_token %}
                     <button
@@ -18,12 +19,13 @@
                     {% else %} 
                         class="btn btn-primary"
                     {% endif %}
-                    type="submit" value="{{ listing.id }}" name="listing">
+                    type="submit" value="{{ listing.id }}" name="listing" id="watchlist">
                         watchlist
                     </button>
                 </form> 
+            </li>
         {% endif %}
-    </div>
+    </ul>
     <div>
         <img src={{ listing.image_URL }}>
         <p>{{ listing.description }}</p>

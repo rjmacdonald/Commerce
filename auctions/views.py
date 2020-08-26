@@ -176,6 +176,7 @@ def user(request):
     return render(request, "auctions/user.html")
 
 def categories(request):
+    # Retrieves category list and counts entries for each
     categories = Category.objects.all().order_by("category")
     counts = {}
     for category in categories:
@@ -192,18 +193,19 @@ def create(request):
         form = CreateListing(request.POST)
 
         if form.is_valid():
-            title = form.cleaned_data["title"]
-            description = form.cleaned_data["description"]
-            starting_bid = form.cleaned_data["starting_bid"]
-            image_URL = form.cleaned_data["image_URL"]
+
+            # Initialises category, sets data if present
             category = None
             if form.cleaned_data["category"]:
                 category = form.cleaned_data["category"]
-            owner = form.cleaned_data["owner"]
-
+            
             listing = Listing.objects.create(
-                title=title, owner_id=owner, description=description, starting_bid=starting_bid, 
-                image_URL=image_URL, category_id=category)
+                title=form.cleaned_data["title"], 
+                owner_id=form.cleaned_data["owner"], 
+                description=form.cleaned_data["description"], 
+                starting_bid=form.cleaned_data["starting_bid"], 
+                image_URL=form.cleaned_data["image_URL"], 
+                category_id=category)
 
             return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
         else:
@@ -252,6 +254,10 @@ def watchlist(request):
         })
 
 def listing(request, listing_id):
+
+    # Initialises variables and forms for use in all routes
+    # Initialised in order of requirement
+    # If there are no submitted bids, bid is set to starting bid value
     user = request.user.id
     listing = Listing.objects.filter(id=listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
@@ -265,6 +271,7 @@ def listing(request, listing_id):
 
     if request.method == "POST":
 
+        # New bid path
         if "submit_bid" in request.POST:
             form = BidForm(request.POST)
 
@@ -286,6 +293,7 @@ def listing(request, listing_id):
                     "form_comment": form_comment
                 })
         
+        # New comment path
         elif "submit_comment" in request.POST:
             form = CommentForm(request.POST)
 
@@ -306,6 +314,7 @@ def listing(request, listing_id):
                     "form_comment": form_comment
                 })
         
+        # Close listing path
         else:
             if request.user.id != listing.owner_id:
                 return HttpResponse("Error: Unauthorised action")
@@ -313,11 +322,13 @@ def listing(request, listing_id):
             Listing.objects.filter(id=listing_id).delete()
             return HttpResponseRedirect(reverse("auctions:index"))
 
-    return render(request, "auctions/listing.html", {
-        "bid": bid,
-        "comments": comments,
-        "listing": listing,
-        "watchlist": watchlist,
-        "form_bid": form_bid,
-        "form_comment": form_comment
-    })
+    # Get method
+        else:
+        return render(request, "auctions/listing.html", {
+            "bid": bid,
+            "comments": comments,
+            "listing": listing,
+            "watchlist": watchlist,
+            "form_bid": form_bid,
+            "form_comment": form_comment
+        })

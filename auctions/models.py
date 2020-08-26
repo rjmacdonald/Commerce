@@ -16,7 +16,6 @@ class Bid(models.Model):
     )
     bid_amount = models.DecimalField(max_digits=8, decimal_places=2)
     timestamp = models.DateTimeField(auto_now_add=True)
-    is_winner = models.BooleanField(default=False)
 
     def __str__(self):
         return(f"{self.user}: {self.bid_amount}")

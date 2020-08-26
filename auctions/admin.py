@@ -5,7 +5,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ("id", "username", "first_name", "last_name", "email", "is_superuser", "is_staff", "is_active")
 
 class BidAdmin(admin.ModelAdmin):
-    list_display = ("id", "listing", "user", "bid_amount", "timestamp", "is_winner")
+    list_display = ("id", "listing", "user", "bid_amount", "timestamp")
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("id", "category")

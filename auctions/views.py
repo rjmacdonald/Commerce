@@ -262,16 +262,15 @@ def listing(request, listing_id):
     # Initialised in order of requirement
     user = request.user.id
     listing = Listing.objects.filter(id=listing_id).first()
-    bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
-    if bid == None:
+    bid_item = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
+    if bid_item == None:
         bid = listing.starting_bid
     else:
-        bid = bid.bid_amount
+        bid = bid_item.bid_amount
     watchlist = Watchlist.objects.filter(user_id=user, listing_id=listing).exists()
     comments = Comment.objects.filter(listing_id=listing.id)
     form_bid = BidForm(initial={"current_bid": bid, "listing_id": listing.id, "user_id": user})
     form_comment = CommentForm(initial={"listing_id": listing.id, "user_id": user})
-
 
     if request.method == "POST":
 
@@ -290,6 +289,7 @@ def listing(request, listing_id):
                 form_bid = BidForm(request.POST)
                 return render(request, "auctions/listing.html", {
                     "bid": bid,
+                    "bid_item": bid_item,
                     "comments": comments,
                     "listing": listing,
                     "watchlist": watchlist,
@@ -311,6 +311,7 @@ def listing(request, listing_id):
                 form_comment = CommentForm(request.POST)
                 return render(request, "auctions/listing.html", {
                     "bid": bid,
+                    "bid_item": bid_item,
                     "comments": comments,
                     "listing": listing,
                     "watchlist": watchlist,
@@ -323,13 +324,14 @@ def listing(request, listing_id):
             if request.user.id != listing.owner_id:
                 return HttpResponse("Error: Unauthorised action")
 
-            Listing.objects.filter(id=listing_id).delete()
+            Listing.objects.filter(id=listing_id).update(active=False)
             return HttpResponseRedirect(reverse("auctions:index"))
 
     # Get method
     else:
         return render(request, "auctions/listing.html", {
             "bid": bid,
+            "bid_item": bid_item,
             "comments": comments,
             "listing": listing,
             "watchlist": watchlist,

@@ -8,51 +8,97 @@
 
 {% block body %}
     <ul class="nav">
-        <li class="nav-item"> <h2>{{ listing.title }}</h2> </li>
         {% if user.is_authenticated %}
             <li class="nav-item">
                 <form action="{% url 'auctions:watchlist' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" value="{{ listing.id }}" name="watchlist" id="watchlist"
+                    <button type="submit" value="{{ listing.id }}" name="watchlist" 
                         {% if watchlist == True %}
-                            class="btn btn-success">
-                                Remove from watchlist
+                            class="btn btn-light watchlist watchlist-selected"
                         {% else %} 
-                            class="btn btn-primary">
-                                Add to watchlist
+                            class="btn btn-light watchlist watchlist-unselected"
                         {% endif %}
+                    > Watchlist
                     </button>
                 </form> 
             </li>
         {% endif %}
-        {% if user.id == listing.owner_id %}
-            <li class="nav-item">
-                <form action="{% url 'auctions:listing' listing.id %}" method="post">
-                    {% csrf_token %}
-                    <button class="btn btn-danger" type="submit" value="{{ listing.id }}" name="close">
-                        Close Listing
-                    </button>
-                </form>
-            </li>
-        {% endif %}
+        <li class="nav-item"> <h2>{{ listing.title }}</h2> </li>
     </ul>
     <div>
         <img src={{ listing.image_URL }}>
         <p>{{ listing.description }}</p>
     </div>
+    {% if user.id == listing.owner_id %}
+        <div class="form-group">
+            <form action="{% url 'auctions:listing' listing.id %}" method="post">
+                {% csrf_token %}
+                <button class="form-group-item btn btn-danger" type="submit" value="{{ listing.id }}" name="close">
+                    Close Listing
+                </button>
+            </form>
+        </div>
+    {% endif %}
 
     <h4>Bids</h4>
     <div>
-        Current bid:
-        {% if bid %}
+        Current bid: 
+        {% if bid.bid_amount %}
             £{{ bid.bid_amount }}
         {% else %}
-            £{{ listing.starting_bid }}
+            £{{ bid }}
         {% endif %}
     </div>
+    {% if user.is_authenticated and user.id != listing.owner_id %}
+        <form action="{% url 'auctions:listing' listing.id %}" method="post">
+            {% csrf_token %}
+            {{ form_bid.non_field_errors }}
+            {% for field in form_bid %}
+                {% if field.id_for_label == "id_bid_amount" %}
+                    <h6>{{ field.label_tag }}</h6>
+                {% endif %}
+                <div class="form-group">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="form-group-item help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div> 
+                {{ field.errors }}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" name="submit_bid">Submit bid</button>
+        </form>
+    {% endif %}
 
 
 
     <h4>Comments</h4>
+    <ul class="list-group comments">
+        {% for comment in comments %}
+            <li class="list-group-item">
+                {{ comment.comment }}
+            </li>
+        {% empty %}
+            <p>No comments, be the first to say something!</p>
+        {% endfor %}
+    </ul>
 
+    {% if user.is_authenticated %}
+        <form action="{% url 'auctions:listing' listing.id %}" method="post">
+            {% csrf_token %}
+            {{ form_comment.non_field_errors }}
+            {% for field in form_comment %}
+                {% if field.id_for_label == "id_comment" %}
+                    <h6>{{ field.label_tag }}</h6>
+                {% endif %}
+                <div class="form-group">
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="form-group-item help">{{ field.help_text|safe }}</p>
+                    {% endif %}
+                </div> 
+                {{ field.errors }}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" name="submit_comment">Comment</button>
+        </form>
+    {% endif %}
 {% endblock %}

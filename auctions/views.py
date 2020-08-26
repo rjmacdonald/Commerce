@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
 from .models import User, Bid, Category, Comment, Listing, Watchlist
 from .utils import get_bid
@@ -14,19 +16,24 @@ class CreateListing(forms.Form):
         label='Title', 
         max_length=100, 
         help_text="100 characters max", 
-        widget=forms.TextInput(attrs={"class":"form-control"}))
-    description = forms.CharField(widget=forms.Textarea(attrs={"class":"form-control"}))
+        widget=forms.TextInput(attrs={"class":"form-control"})
+        )
+    description = forms.CharField(
+        widget=forms.Textarea(attrs={"class":"form-control"})
+        )
     starting_bid = forms.DecimalField(
         min_value=0.01, 
         max_digits=8, 
         decimal_places=2, 
         help_text="Provide the minimum starting bid", 
-        widget=forms.NumberInput(attrs={"class":"form-control"}))
+        widget=forms.NumberInput(attrs={"class":"form-control"})
+        )
     image_URL = forms.URLField(
         label="Image URL", 
         required=False, 
         help_text="Provide a link to your image", 
-        widget=forms.URLInput(attrs={"class":"form-control"}))
+        widget=forms.URLInput(attrs={"class":"form-control"})
+        )
 
     # Generates tuple list of categories
     # Note: tuple required as choice field defines name and value
@@ -34,16 +41,62 @@ class CreateListing(forms.Form):
     categories = [(None, "Please select...")]
     for option in options:
         categories.append((option.id, option.category))
-    print(categories)
+    
     category = forms.ChoiceField(
         choices=categories, 
         required=False,
         help_text="Select the most appropriate category for your listing",
-        widget=forms.Select(attrs={"class":"form-control"}))
-
+        widget=forms.Select(attrs={"class":"form-control"})
+        )
     owner = forms.IntegerField(
-        label='', 
-        widget=forms.HiddenInput)
+        widget=forms.HiddenInput
+        )
+
+
+class BidForm(forms.Form):
+    current_bid = forms.DecimalField(
+        widget=forms.HiddenInput
+    )
+    listing_id = forms.IntegerField(
+        widget=forms.HiddenInput
+    )
+    user_id = forms.IntegerField(
+        widget=forms.HiddenInput
+    )
+    bid_amount = forms.DecimalField(
+        label="Place bid",
+        max_digits=8,
+        decimal_places=2
+    )
+
+    # Validates new bid is greater than current bid
+    def clean_bid_amount(self):
+        bid_amount = self.cleaned_data["bid_amount"]
+        current_bid = self.cleaned_data["current_bid"]
+
+        if bid_amount <= current_bid:
+            error = ValidationError(
+                _("Error: New bid must be greater than the previous bid of £%(bid)s"),
+                code="invalid",
+                params={"bid":current_bid})
+            self.add_error("bid_amount", error)
+        
+        return bid_amount
+
+
+class CommentForm(forms.Form):
+    listing_id = forms.IntegerField(
+        label='',
+        widget=forms.HiddenInput
+    )
+    user_id = forms.IntegerField(
+        label='',
+        widget=forms.HiddenInput
+    )
+    comment = forms.CharField(
+        label="Add comment",
+        widget=forms.Textarea(attrs={"class":"comments"})
+    )
 
 def index(request):
 
@@ -185,8 +238,8 @@ def watchlist(request):
         return HttpResponseRedirect(reverse("auctions:listing", args=[request.POST["watchlist"]]))
 
     else:
-        user = User.objects.filter(id=user).get()
-        watchlist = user.watchlist.all()
+        user_object = User.objects.filter(id=user).get()
+        watchlist = user_object.watchlist.all()
 
         # Retrieve bids
         bids = {}
@@ -202,17 +255,69 @@ def listing(request, listing_id):
     user = request.user.id
     listing = Listing.objects.filter(id=listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
+    if bid == None:
+        bid = listing.starting_bid
     watchlist = Watchlist.objects.filter(user_id=user, listing_id=listing).exists()
+    comments = Comment.objects.filter(listing_id=listing.id)
+    form_bid = BidForm(initial={"current_bid": bid, "listing_id": listing.id, "user_id": user})
+    form_comment = CommentForm(initial={"listing_id": listing.id, "user_id": user})
+
 
     if request.method == "POST":
-        if request.user.id != listing.owner_id:
-            return HttpResponse("Error: Unauthorised action")
 
-        delete = Listing.objects.filter(id=listing_id).delete()
-        return HttpResponseRedirect(reverse("auctions:index"))
+        if "submit_bid" in request.POST:
+            form = BidForm(request.POST)
+
+            if form.is_valid():
+                Bid.objects.create(
+                    listing_id=form.cleaned_data["listing_id"],
+                    user_id=form.cleaned_data["user_id"],
+                    bid_amount=form.cleaned_data["bid_amount"]
+                )
+                return HttpResponseRedirect(reverse("auctions:listing", args=[form.cleaned_data["listing_id"]]))
+            else:
+                form_bid = BidForm(request.POST)
+                return render(request, "auctions/listing.html", {
+                    "bid": bid,
+                    "comments": comments,
+                    "listing": listing,
+                    "watchlist": watchlist,
+                    "form_bid": form_bid,
+                    "form_comment": form_comment
+                })
+        
+        elif "submit_comment" in request.POST:
+            form = CommentForm(request.POST)
+
+            if form.is_valid():
+                Comment.objects.create(
+                    listing_id=form.cleaned_data["listing_id"],
+                    user_id=form.cleaned_data["user_id"],
+                    comment=form.cleaned_data["comment"])
+                return HttpResponseRedirect(reverse("auctions:listing", args=[form.cleaned_data["listing_id"]]))
+            else:
+                form_comment = CommentForm(request.POST)
+                return render(request, "auctions/listing.html", {
+                    "bid": bid,
+                    "comments": comments,
+                    "listing": listing,
+                    "watchlist": watchlist,
+                    "form_bid": form_bid,
+                    "form_comment": form_comment
+                })
+        
+        else:
+            if request.user.id != listing.owner_id:
+                return HttpResponse("Error: Unauthorised action")
+
+            Listing.objects.filter(id=listing_id).delete()
+            return HttpResponseRedirect(reverse("auctions:index"))
 
     return render(request, "auctions/listing.html", {
-        "listing": listing,
         "bid": bid,
+        "comments": comments,
+        "listing": listing,
         "watchlist": watchlist,
+        "form_bid": form_bid,
+        "form_comment": form_comment
     })

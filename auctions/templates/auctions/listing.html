@@ -42,12 +42,7 @@
 
     <h4>Bids</h4>
     <div>
-        Current bid: 
-        {% if bid.bid_amount %}
-            £{{ bid.bid_amount }}
-        {% else %}
-            £{{ bid }}
-        {% endif %}
+        Current bid: £{{ bid }}
     </div>
     {% if user.is_authenticated and user.id != listing.owner_id %}
         <form action="{% url 'auctions:listing' listing.id %}" method="post">

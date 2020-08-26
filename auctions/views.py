@@ -83,6 +83,9 @@ class BidForm(forms.Form):
         
         return bid_amount
 
+    # Validation for current_bid owner vs current user
+    ## TO DO
+
 
 class CommentForm(forms.Form):
     listing_id = forms.IntegerField(
@@ -257,12 +260,13 @@ def listing(request, listing_id):
 
     # Initialises variables and forms for use in all routes
     # Initialised in order of requirement
-    # If there are no submitted bids, bid is set to starting bid value
     user = request.user.id
     listing = Listing.objects.filter(id=listing_id).first()
     bid = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
     if bid == None:
         bid = listing.starting_bid
+    else:
+        bid = bid.bid_amount
     watchlist = Watchlist.objects.filter(user_id=user, listing_id=listing).exists()
     comments = Comment.objects.filter(listing_id=listing.id)
     form_bid = BidForm(initial={"current_bid": bid, "listing_id": listing.id, "user_id": user})

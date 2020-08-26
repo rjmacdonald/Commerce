@@ -323,7 +323,7 @@ def listing(request, listing_id):
             return HttpResponseRedirect(reverse("auctions:index"))
 
     # Get method
-        else:
+    else:
         return render(request, "auctions/listing.html", {
             "bid": bid,
             "comments": comments,

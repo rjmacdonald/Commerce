@@ -51,24 +51,28 @@
             <p> The auction has now ended and the item has been sold. </p>
         {% endif %}
     {% endif %}
-    {% if user.is_authenticated and user.id != listing.owner_id  and listing.active %}
-        <form action="{% url 'auctions:listing' listing.id %}" method="post">
-            {% csrf_token %}
-            {{ form_bid.non_field_errors }}
-            {% for field in form_bid %}
-                {% if field.id_for_label == "id_bid_amount" %}
-                    <h6>{{ field.label_tag }}</h6>
-                {% endif %}
-                <div class="form-group">
-                    {{ field }}
-                    {% if field.help_text %}
-                        <p class="form-group-item help">{{ field.help_text|safe }}</p>
+    {% if user.is_authenticated and user.id != listing.owner_id and listing.active %}
+        {% if user.id != bid_item.user_id %}
+            <form action="{% url 'auctions:listing' listing.id %}" method="post">
+                {% csrf_token %}
+                {{ form_bid.non_field_errors }}
+                {% for field in form_bid %}
+                    {% if field.id_for_label == "id_bid_amount" %}
+                        <h6>{{ field.label_tag }}</h6>
                     {% endif %}
-                </div> 
-                {{ field.errors }}
-            {% endfor %}
-            <button type="submit" class="btn btn-primary" name="submit_bid">Submit bid</button>
-        </form>
+                    <div class="form-group">
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="form-group-item help">{{ field.help_text|safe }}</p>
+                        {% endif %}
+                    </div> 
+                    {{ field.errors }}
+                {% endfor %}
+                <button type="submit" class="btn btn-primary" name="submit_bid">Submit bid</button>
+            </form>
+        {% else %}
+            <p>Your bid is currently winning!</p>
+        {% endif %}
     {% endif %}
 
 

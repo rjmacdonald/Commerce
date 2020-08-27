@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
@@ -52,7 +53,6 @@ class CreateListing(forms.Form):
         widget=forms.HiddenInput
         )
 
-
 class BidForm(forms.Form):
     current_bid = forms.DecimalField(
         widget=forms.HiddenInput
@@ -85,7 +85,6 @@ class BidForm(forms.Form):
 
     # Validation for current_bid owner vs current user
     ## TO DO
-
 
 class CommentForm(forms.Form):
     listing_id = forms.IntegerField(
@@ -123,7 +122,6 @@ def index(request):
         "category": category
     })
 
-
 def login_view(request):
     if request.method == "POST":
 
@@ -143,11 +141,9 @@ def login_view(request):
     else:
         return render(request, "auctions/login.html")
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("auctions:index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -175,6 +171,7 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
+@login_required(login_url="/login")
 def user(request):
     return render(request, "auctions/user.html")
 
@@ -191,6 +188,7 @@ def categories(request):
         "counts": counts
     })
 
+@login_required(login_url="/login")
 def create(request):
     if request.method == "POST":
         form = CreateListing(request.POST)
@@ -222,6 +220,7 @@ def create(request):
             "form": form
         })
 
+@login_required(login_url="/login")
 def watchlist(request):
     user = request.user.id
 

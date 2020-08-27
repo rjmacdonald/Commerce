@@ -26,6 +26,8 @@
                 </div>
                 {% if listing.image_URL %}
                     <img class="img-thumbnail" src={{ listing.image_URL}}>
+                {% else %}
+                    <img class="img-thumbnail" src="/static/auctions/noimage.png">
                 {% endif %}
                 <div>{{ listing.description }}</div>
             </li>

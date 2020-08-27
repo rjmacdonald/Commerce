@@ -17,7 +17,13 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-                <img src="{{ entry.listing.image_URL }}">
+                <div>
+                    {% if entry.listing.image_URL %}
+                        <img class="img-thumbnail" src={{ entry.listing.image_URL }}>
+                    {% else %}
+                        <img class="img-thumbnail" src="/static/auctions/noimage.png">
+                    {% endif %}
+                </div>
                 <div>
                     {{ entry.listing.description }}
                 </div>

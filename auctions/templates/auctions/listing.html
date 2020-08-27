@@ -20,7 +20,11 @@
         <li class="nav-item"> <h2>{{ listing.title }}</h2> </li>
     </ul>
     <div>
-        <img src={{ listing.image_URL }}>
+        {% if listing.image_URL %}
+            <img src={{ listing.image_URL }}>
+        {% else %}
+            <img src="/static/auctions/noimage.png">
+        {% endif %}
         <p>{{ listing.description }}</p>
     </div>
     {% if user.id == listing.owner_id and listing.active %}

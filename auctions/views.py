@@ -1,11 +1,12 @@
+from django import forms
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django import forms
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from .models import User, Bid, Category, Comment, Listing, Watchlist
@@ -135,9 +136,8 @@ def login_view(request):
             login(request, user)
             return HttpResponseRedirect(reverse("auctions:index"))
         else:
-            return render(request, "auctions/login.html", {
-                "message": "Invalid username and/or password."
-            })
+            messages.error(request, "Invalid username and/or password", extra_tags="alert alert-danger")
+            return render(request, "auctions/login.html")
     else:
         return render(request, "auctions/login.html")
 
@@ -154,18 +154,16 @@ def register(request):
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
         if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
-            })
+            messages.error(request, "Error: Passwords must match", extra_tags="alert alert-danger")
+            return render(request, "auctions/register.html")
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": "Username already taken."
-            })
+            messages.error(request, "Error: Username already taken", extra_tags="alert alert-danger")
+            return render(request, "auctions/register.html")
         login(request, user)
         return HttpResponseRedirect(reverse("auctions:index"))
     else:
@@ -210,9 +208,9 @@ def create(request):
 
             return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
         else:
+            messages.error(request, "Error: Invalid submission", extra_tags="alert alert-danger")
             return render(request, "auctions/create.html", {
                 "form": form,
-                "message": "Error: Invalid submission"
             })
     else:
         form = CreateListing(initial={"owner": request.user.id})
@@ -261,6 +259,9 @@ def listing(request, listing_id):
     # Initialised in order of requirement
     user = request.user.id
     listing = Listing.objects.filter(id=listing_id).first()
+    if listing == None:
+        messages.error(request, "Error: Listing does not exist", extra_tags="alert alert-danger")
+        return HttpResponseRedirect(reverse("auctions:index"))
     bid_item = Bid.objects.filter(listing=listing.id).order_by('-bid_amount').first()
     if bid_item == None:
         bid = listing.starting_bid
@@ -283,7 +284,7 @@ def listing(request, listing_id):
                     user_id=form.cleaned_data["user_id"],
                     bid_amount=form.cleaned_data["bid_amount"]
                 )
-                return HttpResponseRedirect(reverse("auctions:listing", args=[form.cleaned_data["listing_id"]]))
+                return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
             else:
                 form_bid = BidForm(request.POST)
                 return render(request, "auctions/listing.html", {
@@ -305,7 +306,7 @@ def listing(request, listing_id):
                     listing_id=form.cleaned_data["listing_id"],
                     user_id=form.cleaned_data["user_id"],
                     comment=form.cleaned_data["comment"])
-                return HttpResponseRedirect(reverse("auctions:listing", args=[form.cleaned_data["listing_id"]]))
+                return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
             else:
                 form_comment = CommentForm(request.POST)
                 return render(request, "auctions/listing.html", {
@@ -321,7 +322,8 @@ def listing(request, listing_id):
         # Close listing path
         else:
             if request.user.id != listing.owner_id:
-                return HttpResponse("Error: Unauthorised action")
+                messages.error(request, "Error: Unauthorised action", extra_tags="alert alert-danger")
+                return HttpResponseRedirect(reverse("auctions:listing", args=[listing.id]))
 
             Listing.objects.filter(id=listing_id).update(active=False)
             return HttpResponseRedirect(reverse("auctions:index"))

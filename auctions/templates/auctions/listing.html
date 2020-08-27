@@ -1,11 +1,5 @@
 {% extends "auctions/layout.html" %}
 
-{% block message %}
-    <div class="alert alert-info" role="alert">
-        {{ message }}
-    </div>
-{% endblock %}
-
 {% block body %}
     <ul class="nav">
         {% if user.is_authenticated %}

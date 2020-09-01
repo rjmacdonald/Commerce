@@ -147,12 +147,21 @@ def logout_view(request):
 
 def register(request):
     if request.method == "POST":
+
+        # Ensure all fields provided
         username = request.POST["username"]
         email = request.POST["email"]
-
-        # Ensure password matches confirmation
         password = request.POST["password"]
         confirmation = request.POST["confirmation"]
+
+        print(f"username = {username}, email = {email}, password = {password}, confirmation = {confirmation}")
+
+        if username == '' or email == '' or password == '' or confirmation == '':
+            print("None test")
+            messages.error(request, "Error: Missing values", extra_tags="alert alert-danger")
+            return render(request, "auctions/register.html")
+
+        # Ensure password matches confirmation
         if password != confirmation:
             messages.error(request, "Error: Passwords must match", extra_tags="alert alert-danger")
             return render(request, "auctions/register.html")
